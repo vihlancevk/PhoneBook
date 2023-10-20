@@ -1,76 +1,98 @@
 import java.util.*;
+import java.util.Map.Entry;
 
 public class PhoneBook {
-    private final Map<String, List<PhoneBookEntry>> name2entries;
+    private final Map<String, String> name2number;
 
     public PhoneBook() {
-        this.name2entries = new HashMap<>();
+        this.name2number = new HashMap<>();
     }
 
-    public void addEntry(String name, String number) {
-        if (!name2entries.containsKey(name))
-            name2entries.put(
-                name, new ArrayList<>(
-                        Arrays.asList(new PhoneBookEntry(name, number))
-                )
-            );
-        else
-            name2entries.get(name).add(new PhoneBookEntry(name, number));
+    public PhoneBookStatus addEntry(String name, String number) {
+        if (name2number.containsKey(name))
+            return PhoneBookStatus.ERROR_NAME_EXIST;
+
+        if (name2number.containsValue(number))
+            return PhoneBookStatus.ERROR_NUMBER_EXIST;
+
+        name2number.put(name, number);
+
+        return PhoneBookStatus.OK;
     }
 
-    public Optional<List<PhoneBookEntry>> getNumbersByName(String name) {
-        if (!name2entries.containsKey(name))
-            return Optional.empty();
+    public PhoneBookStatus delEntryByName(String name) {
+        if (!name2number.containsKey(name))
+            return PhoneBookStatus.ERROR_NAME_NOT_EXIST;
 
-        return Optional.of(name2entries.get(name));
+        name2number.remove(name);
+
+        return PhoneBookStatus.OK;
+    }
+
+    public PhoneBookStatus delEntryByNumber(String number) {
+        Optional<String> name = getNameByNumber(number);
+
+        if (name.isEmpty())
+            return PhoneBookStatus.ERROR_NUMBER_NOT_EXIST;
+
+        name2number.remove(name.get(), number);
+
+        return PhoneBookStatus.OK;
+    }
+
+    public Optional<String> getNumberByName(String name) {
+        if (name2number.containsKey(name))
+            return Optional.of(name2number.get(name));
+
+        return Optional.empty();
+    }
+
+    public Optional<String> getNameByNumber(String number) {
+        for (Entry<String, String> entry : name2number.entrySet()) {
+            if (entry.getValue().equals(number))
+                return Optional.of(entry.getKey());
+        }
+
+        return Optional.empty();
     }
 
     @Override
     public String toString() {
         StringBuilder resultedString = new StringBuilder();
 
-        for (String name : name2entries.keySet()) {
-            resultedString.append(name).append(" ").append("->");
-            for (PhoneBookEntry entry : name2entries.get(name))
-                resultedString.append(" ").append(entry).append(",");
-            resultedString.append("\n");
-        }
+        for (Entry<String, String> entry : name2number.entrySet())
+            resultedString.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
 
 
         return resultedString.toString();
     }
 
-    public static class PhoneBookEntry {
-        private final String name;
-        private final String number;
-
-        public PhoneBookEntry(String name, String number) {
-            this.name = name;
-            this.number = number;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getNumber() {
-            return number;
-        }
-
-        @Override
-        public String toString() {
-            return number;
-        }
+    public enum PhoneBookStatus {
+        OK,
+        ERROR_NAME_EXIST,
+        ERROR_NUMBER_EXIST,
+        ERROR_NAME_NOT_EXIST,
+        ERROR_NUMBER_NOT_EXIST,
     }
 
     public static void main(String[] args) {
         PhoneBook phoneBook = new PhoneBook();
 
-        phoneBook.addEntry("Костя", "+7(9xx)xxx-18-xx");
-        phoneBook.addEntry("Андрей", "+7(9**)***-68-**");
-        phoneBook.addEntry("Алечка", "+7(9**)***-03-**");
-        phoneBook.addEntry("Андрей", "+7(9xx)xxx-18-xx");
+        System.out.println(phoneBook.addEntry("Костя", "+7(9**)***-18-**"));
+        System.out.println(phoneBook.addEntry("Андрей", "+7(9**)***-68-**"));
+        System.out.println(phoneBook.addEntry("Алечка", "+7(9**)***-18-**"));
+        System.out.println(phoneBook.addEntry("Андрей", "+7(9**)***-11-**"));
 
+        System.out.println(phoneBook);
+
+        System.out.println(phoneBook.getNumberByName("Костя"));
+        System.out.println(phoneBook.getNumberByName("Алечка"));
+        System.out.println(phoneBook.getNameByNumber("+7(9**)***-18-**"));
+        System.out.println(phoneBook.getNameByNumber("+7(9**)***-11-**"));
+
+        System.out.println(phoneBook.delEntryByName("Костя"));
+        System.out.println(phoneBook);
+        System.out.println(phoneBook.delEntryByNumber("+7(9**)***-68-**"));
         System.out.println(phoneBook);
     }
 }
