@@ -40,6 +40,14 @@ public class PhoneBook {
         return PhoneBookStatus.OK;
     }
 
+    public void clear() {
+        name2number.clear();
+    }
+
+    public boolean isEmpty() {
+        return name2number.isEmpty();
+    }
+
     public Optional<String> getNumberByName(String name) {
         if (name2number.containsKey(name))
             return Optional.of(name2number.get(name));
@@ -54,6 +62,24 @@ public class PhoneBook {
         }
 
         return Optional.empty();
+    }
+
+    public PhoneBookStatus setNumberByName(String name, String newNumber) {
+        if (!name2number.containsKey(name))
+            return PhoneBookStatus.ERROR_NAME_NOT_EXIST;
+
+        name2number.put(name, newNumber);
+
+        return PhoneBookStatus.OK;
+    }
+
+    public PhoneBookStatus setNameByNumber(String newName, String number) {
+        PhoneBookStatus status = delEntryByNumber(number);
+
+        if (status.equals(PhoneBookStatus.OK))
+            status = addEntry(newName, number);
+
+        return status;
     }
 
     @Override
@@ -73,26 +99,5 @@ public class PhoneBook {
         ERROR_NUMBER_EXIST,
         ERROR_NAME_NOT_EXIST,
         ERROR_NUMBER_NOT_EXIST,
-    }
-
-    public static void main(String[] args) {
-        PhoneBook phoneBook = new PhoneBook();
-
-        System.out.println(phoneBook.addEntry("Костя", "+7(9**)***-18-**"));
-        System.out.println(phoneBook.addEntry("Андрей", "+7(9**)***-68-**"));
-        System.out.println(phoneBook.addEntry("Алечка", "+7(9**)***-18-**"));
-        System.out.println(phoneBook.addEntry("Андрей", "+7(9**)***-11-**"));
-
-        System.out.println(phoneBook);
-
-        System.out.println(phoneBook.getNumberByName("Костя"));
-        System.out.println(phoneBook.getNumberByName("Алечка"));
-        System.out.println(phoneBook.getNameByNumber("+7(9**)***-18-**"));
-        System.out.println(phoneBook.getNameByNumber("+7(9**)***-11-**"));
-
-        System.out.println(phoneBook.delEntryByName("Костя"));
-        System.out.println(phoneBook);
-        System.out.println(phoneBook.delEntryByNumber("+7(9**)***-68-**"));
-        System.out.println(phoneBook);
     }
 }
