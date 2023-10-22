@@ -1,11 +1,28 @@
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+@JsonIncludeProperties("name2number")
 public class PhoneBook {
     private final Map<String, String> name2number;
 
     public PhoneBook() {
         this.name2number = new HashMap<>();
+    }
+
+    // We need add this constructor to work json deserializing
+    @JsonCreator
+    public PhoneBook(@JsonProperty("name2number") Map<String, String> name2number) {
+        this.name2number = name2number;
+    }
+
+    // We need add this method to work json serializing
+    public Map<String, String> getName2number() {
+        return name2number;
     }
 
     public PhoneBookStatus addEntry(String name, String number) {
@@ -84,13 +101,9 @@ public class PhoneBook {
 
     @Override
     public String toString() {
-        StringBuilder resultedString = new StringBuilder();
-
-        for (Entry<String, String> entry : name2number.entrySet())
-            resultedString.append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
-
-
-        return resultedString.toString();
+        return name2number.entrySet().stream()
+                .map(e -> e.getKey() + " -> " + e.getValue())
+                .collect(Collectors.joining("\n"));
     }
 
     public enum PhoneBookStatus {
