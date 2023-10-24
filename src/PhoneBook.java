@@ -6,42 +6,43 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-@JsonIncludeProperties("name2number")
+@JsonIncludeProperties("phoneBook")
 public class PhoneBook {
-    private final Map<String, String> name2number;
+    private final Map<String, String> phoneBook;
 
+    // name to number
     public PhoneBook() {
-        this.name2number = new HashMap<>();
+        this.phoneBook = new HashMap<>();
     }
 
     // We need add this constructor to work json deserializing
     @JsonCreator
-    public PhoneBook(@JsonProperty("name2number") Map<String, String> name2number) {
-        this.name2number = name2number;
+    public PhoneBook(@JsonProperty("phoneBook") Map<String, String> name2number) {
+        this.phoneBook = name2number;
     }
 
     // We need add this method to work json serializing
-    public Map<String, String> getName2number() {
-        return name2number;
+    public Map<String, String> getPhoneBook() {
+        return phoneBook;
     }
 
     public PhoneBookStatus addEntry(String name, String number) {
-        if (name2number.containsKey(name))
+        if (phoneBook.containsKey(name))
             return PhoneBookStatus.ERROR_NAME_EXIST;
 
-        if (name2number.containsValue(number))
+        if (phoneBook.containsValue(number))
             return PhoneBookStatus.ERROR_NUMBER_EXIST;
 
-        name2number.put(name, number);
+        phoneBook.put(name, number);
 
         return PhoneBookStatus.OK;
     }
 
     public PhoneBookStatus delEntryByName(String name) {
-        if (!name2number.containsKey(name))
+        if (!phoneBook.containsKey(name))
             return PhoneBookStatus.ERROR_NAME_NOT_EXIST;
 
-        name2number.remove(name);
+        phoneBook.remove(name);
 
         return PhoneBookStatus.OK;
     }
@@ -52,28 +53,20 @@ public class PhoneBook {
         if (name.isEmpty())
             return PhoneBookStatus.ERROR_NUMBER_NOT_EXIST;
 
-        name2number.remove(name.get(), number);
+        phoneBook.remove(name.get(), number);
 
         return PhoneBookStatus.OK;
     }
 
-    public void clear() {
-        name2number.clear();
-    }
-
-    public boolean isEmpty() {
-        return name2number.isEmpty();
-    }
-
     public Optional<String> getNumberByName(String name) {
-        if (name2number.containsKey(name))
-            return Optional.of(name2number.get(name));
+        if (phoneBook.containsKey(name))
+            return Optional.of(phoneBook.get(name));
 
         return Optional.empty();
     }
 
     public Optional<String> getNameByNumber(String number) {
-        for (Entry<String, String> entry : name2number.entrySet()) {
+        for (Entry<String, String> entry : phoneBook.entrySet()) {
             if (entry.getValue().equals(number))
                 return Optional.of(entry.getKey());
         }
@@ -82,10 +75,10 @@ public class PhoneBook {
     }
 
     public PhoneBookStatus setNumberByName(String name, String newNumber) {
-        if (!name2number.containsKey(name))
+        if (!phoneBook.containsKey(name))
             return PhoneBookStatus.ERROR_NAME_NOT_EXIST;
 
-        name2number.put(name, newNumber);
+        phoneBook.put(name, newNumber);
 
         return PhoneBookStatus.OK;
     }
@@ -99,18 +92,41 @@ public class PhoneBook {
         return status;
     }
 
+    public void clear() {
+        phoneBook.clear();
+    }
+
+    public boolean isEmpty() {
+        return phoneBook.isEmpty();
+    }
+
     @Override
     public String toString() {
-        return name2number.entrySet().stream()
-                .map(e -> e.getKey() + " -> " + e.getValue())
-                .collect(Collectors.joining("\n"));
+        if (isEmpty())
+            return "Phone book is empty.";
+
+        return "Phone book:\n" +
+                phoneBook.entrySet().stream()
+                        .map(e -> e.getKey() + " -> " + e.getValue())
+                        .collect(Collectors.joining("\n"));
     }
 
     public enum PhoneBookStatus {
-        OK,
-        ERROR_NAME_EXIST,
-        ERROR_NUMBER_EXIST,
-        ERROR_NAME_NOT_EXIST,
-        ERROR_NUMBER_NOT_EXIST,
+        OK("OK."),
+        ERROR_NAME_EXIST("This name already exist in phone book."),
+        ERROR_NUMBER_EXIST("This number already exist in phone book."),
+        ERROR_NAME_NOT_EXIST("This name doesn't exist in phone book."),
+        ERROR_NUMBER_NOT_EXIST("This number doesn't exist in phone book.");
+
+        private final String message;
+
+        PhoneBookStatus(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String toString() {
+            return message;
+        }
     }
 }
