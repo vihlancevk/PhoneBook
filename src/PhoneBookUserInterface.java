@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PhoneBookUserInterface {
     public static void run(Path pathToPhoneBook) throws IOException {
@@ -28,7 +30,7 @@ public class PhoneBookUserInterface {
         while (!enteredNumber.equals("-1")) {
             printInfo();
 
-            enteredNumber = scanner.next();
+            enteredNumber = scanner.nextLine();
 
             switch (enteredNumber) {
                 case "0": {
@@ -86,7 +88,8 @@ public class PhoneBookUserInterface {
                     break;
                 }
                 default: {
-
+                    System.out.println("You entered wrong number of command. Please, try again:");
+                    wait(scanner);
                 }
             }
         }
@@ -118,9 +121,11 @@ public class PhoneBookUserInterface {
         String name = enterName(scanner);
 
         System.out.print("Enter ");
-        String number = enterNumber(scanner);
+        Optional<String> number = enterNumber(scanner);
 
-        System.out.println(phoneBook.addEntry(name, number));
+        number.ifPresent(
+                s -> System.out.println(phoneBook.addEntry(name, s))
+        );
 
         wait(scanner);
     }
@@ -138,9 +143,11 @@ public class PhoneBookUserInterface {
     private static void delEntryByNumber(PhoneBook phoneBook, Scanner scanner) {
         System.out.print("Enter ");
 
-        String number = enterNumber(scanner);
+        Optional<String> number = enterNumber(scanner);
 
-        System.out.println(phoneBook.delEntryByNumber(number));
+        number.ifPresent(
+                s -> System.out.println(phoneBook.delEntryByNumber(s))
+        );
 
         wait(scanner);
     }
@@ -162,13 +169,17 @@ public class PhoneBookUserInterface {
     private static void getNameByNumber(PhoneBook phoneBook, Scanner scanner) {
         System.out.print("Enter ");
 
-        String number = enterNumber(scanner);
+        Optional<String> number = enterNumber(scanner);
 
-        Optional<String> name = phoneBook.getNameByNumber(number);
-        if (name.isEmpty())
-            System.out.println(PhoneBook.PhoneBookStatus.ERROR_NUMBER_NOT_EXIST);
-        else
-            System.out.println(name.get());
+        number.ifPresent(
+                s -> {
+                    Optional<String> name = phoneBook.getNameByNumber(s);
+                    if (name.isEmpty())
+                        System.out.println(PhoneBook.PhoneBookStatus.ERROR_NUMBER_NOT_EXIST);
+                    else
+                        System.out.println(name.get());
+                }
+        );
 
         wait(scanner);
     }
@@ -178,9 +189,11 @@ public class PhoneBookUserInterface {
         String name = enterName(scanner);
 
         System.out.print("Enter new ");
-        String newNumber = enterNumber(scanner);
+        Optional<String> newNumber = enterNumber(scanner);
 
-        System.out.println(phoneBook.setNumberByName(name, newNumber));
+        newNumber.ifPresent(
+                s -> System.out.println(phoneBook.setNumberByName(name, s))
+        );
 
         wait(scanner);
     }
@@ -190,9 +203,11 @@ public class PhoneBookUserInterface {
         String newName = enterName(scanner);
 
         System.out.print("Enter ");
-        String number = enterNumber(scanner);
+        Optional<String> number = enterNumber(scanner);
 
-        System.out.println(phoneBook.setNameByNumber(newName, number));
+        number.ifPresent(
+                s -> System.out.println(phoneBook.setNameByNumber(newName, s))
+        );
 
         wait(scanner);
     }
@@ -213,18 +228,37 @@ public class PhoneBookUserInterface {
 
     private static String enterName(Scanner scanner) {
         System.out.print("name: ");
-        return scanner.next();
+        return scanner.nextLine();
     }
 
-    private static String enterNumber(Scanner scanner) {
+    private static Optional<String> enterNumber(Scanner scanner) {
         System.out.print("number like this '+7(963)873-13-93: ");
-        return scanner.next();
+
+        int counterOfWrongAttempt = 0;
+
+        Pattern pattern = Pattern.compile("[+][0-9][(][0-9]{3}[)][0-9]{3}(-[0-9]{2}){2}");
+
+        String number;
+        Matcher matcher;
+        while (true) {
+            number = scanner.nextLine();
+            if (number.isEmpty() && counterOfWrongAttempt > 0) {
+                System.out.println("Command execution was interrupted.");
+                return Optional.empty();
+            }
+
+            matcher = pattern.matcher(number);
+
+            if (matcher.find())
+                return Optional.of(number);
+            else {
+                System.out.println("You entered wrong number. If you want go back press Enter else try again:");
+                counterOfWrongAttempt++;
+            }
+        }
     }
 
     private static void wait(Scanner scanner) {
-        // Handle new line after enter number
-        scanner.nextLine();
-
         System.out.println("Press Enter to continue.");
         scanner.nextLine();
     }
