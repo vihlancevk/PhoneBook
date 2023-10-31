@@ -1,5 +1,9 @@
+package phone.book;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import interfaces.JsonHandler;
+import phone.book.PhoneBook;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +11,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class PhoneBookJsonHandler {
+public class PhoneBookJsonHandler implements JsonHandler<PhoneBook> {
     private final ObjectMapper mapper;
 
     public PhoneBookJsonHandler() {

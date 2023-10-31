@@ -1,18 +1,25 @@
+package phone.book;
+
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PhoneBookUserInterface {
+public class PhoneBookApplication {
     public static void run(Path pathToPhoneBook) throws IOException {
         System.out.println("You use phone book.\n");
 
         PhoneBookJsonHandler phoneBookHandler = new PhoneBookJsonHandler();
 
         System.out.println("Read phone book...\n");
-        PhoneBook phoneBook = phoneBookHandler.read(pathToPhoneBook);
+        PhoneBook phoneBook;
+        if (Files.size(pathToPhoneBook) == 0)
+            phoneBook =new PhoneBook();
+        else
+            phoneBook = phoneBookHandler.read(pathToPhoneBook);
 
         handlerUserInput(phoneBook);
 
@@ -232,7 +239,7 @@ public class PhoneBookUserInterface {
     }
 
     private static Optional<String> enterNumber(Scanner scanner) {
-        System.out.print("number like this '+7(963)873-13-93: ");
+        System.out.print("number like this '+7(963)873-13-93': ");
 
         int counterOfWrongAttempt = 0;
 

@@ -1,3 +1,5 @@
+package phone.book;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,8 +19,8 @@ public class PhoneBook {
 
     // We need add this constructor to work json deserializing
     @JsonCreator
-    public PhoneBook(@JsonProperty("phoneBook") Map<String, String> name2number) {
-        this.phoneBook = name2number;
+    public PhoneBook(@JsonProperty("phoneBook") Map<String, String> phoneBook) {
+        this.phoneBook = phoneBook;
     }
 
     // We need add this method to work json serializing
