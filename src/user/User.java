@@ -1,25 +1,33 @@
 package user;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
-@JsonIncludeProperties({"username", "password"})
 public class User {
-    private final String username;
+    private final int userId;
+    private final String login;
     private final String password;
 
-    @JsonCreator
-    public User(@JsonProperty("username") String username,
-                @JsonProperty("password") String password) {
-        this.username = username;
+    public User(String login,
+                String password) {
+        this.userId = -1;
+        this.login = login;
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public User(int userId,
+                String login,
+                String password) {
+        this.userId = userId;
+        this.login = login;
+        this.password = password;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public String getLogin() {
+        return login;
     }
 
     public String getPassword() {
@@ -36,7 +44,10 @@ public class User {
 
         User other = (User) obj;
 
-        if (Objects.equals(this.username, other.username))
+        if (Objects.equals(this.userId, other.userId))
+            return true;
+
+        if (Objects.equals(this.login, other.login))
             return true;
 
         return Objects.equals(this.password, other.password);
@@ -44,6 +55,6 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.username, this.password);
+        return Objects.hash(this.userId, this.login, this.password);
     }
 }

@@ -5,7 +5,7 @@ import java.sql.*;
 import java.util.Optional;
 import java.util.Scanner;
 
-public class UserApplication {
+public class UsersApplication {
     private static final String url = "jdbc:mysql://localhost:3306/PhoneBook?useSSL=false&useUnicode=true&serverTimezone=UTC";
     private static final String user = "root";
     private static final String password = "password";
@@ -14,9 +14,9 @@ public class UserApplication {
         try (Connection connection = DriverManager.getConnection(url, user, password)) {
             System.out.println("Start using phone book.\n");
 
-            UserDao userDao = new UserDao(connection);
+            UserDAO userDAO = new UserDAO(connection);
 
-            return handlerUserInput(userDao);
+            return handlerUserInput(userDAO);
         } catch (Exception e) {
             // TODO: logging
         }
@@ -24,7 +24,7 @@ public class UserApplication {
         return Optional.empty();
     }
 
-    private static Optional<User> handlerUserInput(UserDao userDao) {
+    private static Optional<User> handlerUserInput(UserDAO userDAO) {
         Scanner scanner = new Scanner(System.in);
 
         String enteredNumber;
@@ -36,25 +36,25 @@ public class UserApplication {
 
             switch (enteredNumber) {
                 case "1": {
-                    Optional<User> user = signUp(userDao, scanner);
+                    Optional<User> user = signUp(userDAO, scanner);
                     if (user.isPresent()) {
                         System.out.println("You successfully sign up.");
                         wait(scanner);
                         return user;
                     } else {
-                        System.out.println("This username already exist. Please, try again:");
+                        System.out.println("This login already exist. Please, try again:");
                         wait(scanner);
                     }
                     break;
                 }
                 case "2": {
-                    Optional<User> user = logIn(userDao, scanner);
+                    Optional<User> user = logIn(userDAO, scanner);
                     if (user.isPresent()) {
                         System.out.println("You successfully log in.");
                         wait(scanner);
                         return user;
                     } else {
-                        System.out.println("This username or password incorrect. Please, try again:");
+                        System.out.println("This login or password incorrect. Please, try again:");
                         wait(scanner);
                     }
                     break;
@@ -78,26 +78,26 @@ public class UserApplication {
                 "-1 - stop\n");
     }
 
-    private static Optional<User> signUp(UserDao userDao, Scanner scanner) {
+    private static Optional<User> signUp(UserDAO userDAO, Scanner scanner) {
         System.out.print("Enter ");
-        String username = enterUsername(scanner);
+        String login = enterLogin(scanner);
 
         System.out.print("Enter ");
         String password = enterPassword(scanner);
 
-        User user = new User(username, password);
+        User user = new User(login, password);
 
-        return userDao.save(user);
+        return userDAO.save(user);
     }
 
-    private static Optional<User> logIn(UserDao userDao, Scanner scanner) {
+    private static Optional<User> logIn(UserDAO userDAO, Scanner scanner) {
         System.out.print("Enter ");
-        String username = enterUsername(scanner);
+        String login = enterLogin(scanner);
 
         System.out.print("Enter ");
         String password = enterPassword(scanner);
 
-        Optional<User> user = userDao.get(username);
+        Optional<User> user = userDAO.get(login);
         if (user.isEmpty())
             return user;
 
@@ -112,8 +112,8 @@ public class UserApplication {
         scanner.nextLine();
     }
 
-    private static String enterUsername(Scanner scanner) {
-        System.out.print("username: ");
+    private static String enterLogin(Scanner scanner) {
+        System.out.print("login: ");
         return scanner.nextLine();
     }
 

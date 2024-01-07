@@ -7,27 +7,29 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import interfaces.Dao;
+import interfaces.DAO;
 
-public class UserDao implements Dao<User> {
+public class UserDAO implements DAO<User> {
     private final Connection connection;
     private final String tableName = "users";
 
-    public UserDao(Connection connection) {
+    public UserDAO(Connection connection) {
         this.connection = connection;
     }
 
     @Override
-    public Optional<User> get(String name) {
-        String query = "SELECT * FROM " + tableName + " WHERE username = ?";
+    public Optional<User> get(String key) {
+        String query = "SELECT * FROM " + tableName + " WHERE login = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, name);
+            preparedStatement.setString(1, key);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next())
-                return Optional.of(new User(resultSet.getString(1), resultSet.getString(2)));
+                return Optional.of(
+                    new User(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3))
+                );
         } catch (SQLException e) {
             // TODO: logging
         }
@@ -45,31 +47,20 @@ public class UserDao implements Dao<User> {
 
     @Override
     public Optional<User> save(User user) {
-        String query = "SELECT COUNT(*) FROM ? WHERE username = ?";
+        // Check, that there is not user with same login
+        if (get(user.getLogin()).isPresent())
+            return Optional.empty();
+
+        String query = "INSERT INTO " + tableName + " (login, password) Values (?, ?)";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, tableName);
-            preparedStatement.setString(2, user.getUsername());
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            while(resultSet.next())
-                if (resultSet.getInt(1) != 0)
-                    return Optional.empty();
-        } catch (SQLException e) {
-            // TODO: logging
-        }
-
-        query = "INSERT INTO " + tableName + " (username, password) Values (?, ?)";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(1, user.getLogin());
             preparedStatement.setString(2, user.getPassword());
 
             int rows = preparedStatement.executeUpdate();
 
             if (rows == 1)
-                return Optional.of(user);
+                return get(user.getLogin());
         } catch (SQLException e) {
             // TODO: logging
         }
@@ -89,7 +80,7 @@ public class UserDao implements Dao<User> {
     This method don't realized.
      */
     @Override
-    public void delete(User user) {
+    public void delete(String key) {
         throw new IllegalStateException();
     }
 }

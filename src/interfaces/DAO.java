@@ -5,14 +5,14 @@ import user.User;
 import java.util.List;
 import java.util.Optional;
 
-public interface Dao<T> {
-    Optional<T> get(String name);
+public interface DAO<T> {
+    Optional<T> get(String key);
 
     List<T> getAll();
 
-    Optional<User> save(T t);
+    Optional<T> save(T t);
 
     void update(T t, String[] params);
 
-    void delete(T t);
+    void delete(String key);
 }
